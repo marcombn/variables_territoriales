@@ -1,0 +1,1261 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo interactivo de variables | Minuta de Antecedentes</title>
+  <style>
+    /* =========================================================
+       CATÁLOGO INTERACTIVO DE VARIABLES
+       - Cambiar colores y nombres: CLASSIFICATION_CONFIG, en el bloque <script>.
+       - Cambiar datos: VARIABLE_DATA, en el bloque <script>.
+       - Cambiar orden de categorías: CATEGORY_ORDER, en el bloque <script>.
+       ========================================================= */
+    :root {
+      --bg:#f5f7fb;
+      --surface:#fff;
+      --text:#1f2937;
+      --muted:#64748b;
+      --brand:#123c69;
+      --brand-2:#2563eb;
+      --line:#dbe3ef;
+      --shadow:0 18px 45px rgba(15,23,42,.08);
+      --radius-lg:22px;
+      --focus:0 0 0 4px rgba(37,99,235,.16);
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0;
+      font-size:14px;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:radial-gradient(circle at top left,rgba(37,99,235,.1),transparent 30rem),linear-gradient(180deg,#f8fbff 0%,var(--bg) 44%,#eef3f9 100%);
+      min-height:100vh;
+    }
+    .layout { width:min(1220px,calc(100% - 32px)); margin:0 auto; }
+
+    /* Encabezado institucional */
+    .hero { padding:34px 0 18px; overflow:hidden; }
+    .hero-panel {
+      background:linear-gradient(135deg,#0f3158 0%,#164b7a 55%,#1d6aa4 100%);
+      border-radius:28px;
+      padding:30px;
+      color:#fff;
+      box-shadow:var(--shadow);
+      position:relative;
+      isolation:isolate;
+    }
+    .hero-panel:after {
+      content:"";
+      position:absolute;
+      inset:auto -80px -120px auto;
+      width:340px;
+      height:340px;
+      background:rgba(255,255,255,.10);
+      border-radius:50%;
+      z-index:-1;
+    }
+    .eyebrow {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:999px;
+      background:rgba(255,255,255,.10);
+      font-size:.8rem;
+      font-weight:700;
+    }
+    .hero h1 { margin:18px 0 10px; font-size:clamp(1.7rem,4vw,3.1rem); line-height:.98; }
+    .hero p { max-width:860px; margin:0; color:rgba(255,255,255,.82); font-size:clamp(.9rem,1.5vw,1rem); }
+    .hero-meta { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:24px; }
+    .meta-card { padding:16px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); border-radius:18px; backdrop-filter:blur(12px); }
+    .meta-card span { display:block; color:rgba(255,255,255,.72); font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; }
+    .meta-card strong { display:block; margin-top:5px; font-size:clamp(1rem,1.7vw,1.35rem); }
+
+    main { padding:18px 0 60px; }
+    .section { margin-top:18px; }
+    .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin:22px 0 12px; }
+    .section-head h2 { margin:0; font-size:clamp(1.1rem,2vw,1.55rem); color:#15395f; }
+    .section-head p { margin:5px 0 0; color:var(--muted); max-width:760px; }
+
+    .grid { display:grid; gap:16px; }
+    .summary-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .card { background:rgba(255,255,255,.9); border:1px solid rgba(219,227,239,.95); border-radius:var(--radius-lg); box-shadow:var(--shadow); overflow:hidden; }
+
+    /* Resumen ejecutivo */
+    .summary-card { padding:18px; }
+    .summary-title {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin:0;
+      padding:9px 12px;
+      border-radius:14px;
+      font-size:.95rem;
+      font-weight:900;
+      border:1px solid rgba(0,0,0,.06);
+      line-height:1;
+    }
+    .summary-value { margin-top:18px; display:flex; align-items:baseline; gap:10px; }
+    .summary-value strong { font-size:1.9rem; letter-spacing:-.04em; }
+    .summary-value span { color:var(--muted); font-weight:700; }
+
+    /* Filtros */
+    .filters {
+      position:sticky;
+      top:10px;
+      z-index:10;
+      display:grid;
+      grid-template-columns:1.4fr 1fr 1fr auto;
+      gap:12px;
+      padding:14px;
+      background:rgba(255,255,255,.88);
+      backdrop-filter:blur(14px);
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow);
+    }
+    .field label { display:block; font-size:.72rem; font-weight:800; color:#43536a; margin:0 0 6px 2px; }
+    input,select,button { font:inherit; }
+    input,select {
+      width:100%;
+      font-size:.92rem;
+      border:1px solid #cfd9e8;
+      border-radius:14px;
+      background:#fff;
+      color:var(--text);
+      min-height:46px;
+      padding:0 13px;
+      outline:none;
+      transition:box-shadow .2s ease,border-color .2s ease;
+    }
+    input:focus,select:focus { border-color:var(--brand-2); box-shadow:var(--focus); }
+    .btn {
+      align-self:end;
+      font-size:.92rem;
+      min-height:46px;
+      border:0;
+      border-radius:14px;
+      padding:0 16px;
+      cursor:pointer;
+      color:#fff;
+      background:linear-gradient(135deg,var(--brand),#2563eb);
+      font-weight:900;
+      box-shadow:0 12px 20px rgba(37,99,235,.18);
+      transition:transform .15s ease,filter .15s ease;
+    }
+    .btn:hover { transform:translateY(-1px); filter:brightness(1.04); }
+
+    .body-grid { display:grid; grid-template-columns:minmax(0,1fr) 310px; gap:18px; align-items:start; }
+    .catalog-headline { display:flex; justify-content:space-between; gap:12px; align-items:center; margin:12px 0; color:var(--muted); font-weight:800; }
+
+    /* Acordeones y tarjetas de variables */
+    .accordion { display:grid; gap:12px; }
+    details.category { background:rgba(255,255,255,.92); border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow); overflow:hidden; }
+    details.category[open] { border-color:rgba(37,99,235,.30); }
+    summary { list-style:none; cursor:pointer; padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; user-select:none; }
+    summary::-webkit-details-marker { display:none; }
+    .summary-left { display:flex; align-items:center; gap:12px; min-width:0; }
+    .chevron { width:34px; height:34px; border-radius:12px; display:grid; place-items:center; background:#eef5ff; color:var(--brand); transition:transform .22s ease; flex:0 0 auto; }
+    details[open] .chevron { transform:rotate(90deg); }
+    .cat-title { font-weight:950; font-size:.96rem; color:#18395e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cat-count { color:var(--muted); font-weight:800; }
+    .cat-body { padding:0 16px 16px; animation:reveal .25s ease both; }
+    @keyframes reveal { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+    .var-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .var-card { position:relative; padding:16px; background:#fff; border:1px solid var(--line); border-left:7px solid #dbe3ef; border-radius:18px; transition:transform .16s ease,box-shadow .16s ease; }
+    .var-card:hover { transform:translateY(-2px); box-shadow:0 16px 28px rgba(15,23,42,.08); }
+    .var-title { margin:0 0 10px; font-size:.93rem; color:#0f2540; line-height:1.25; }
+    .var-meta { display:grid; gap:8px; color:#4b5b70; font-size:.84rem; }
+    .meta-row { display:flex; gap:8px; align-items:flex-start; }
+    .meta-row b { min-width:92px; color:#26374b; }
+    .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 9px; border-radius:999px; font-size:.74rem; font-weight:800; border:1px solid rgba(0,0,0,.06); }
+    .change-chip { display:inline-flex; align-items:center; gap:6px; color:#334155; background:#f1f5f9; padding:5px 8px; border-radius:999px; font-weight:800; font-size:.72rem; }
+
+    /* Leyenda y métricas */
+    .side { position:sticky; top:124px; margin-top:20px; display:grid; gap:14px; }
+    .legend,.metrics { padding:18px; }
+    .legend h3,.metrics h3 { margin:0 0 12px; color:#15395f; }
+    .legend-list { display:grid; gap:10px; }
+    .legend-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px; border-radius:14px; background:#f8fafc; border:1px solid var(--line); }
+    .legend-left { display:flex; align-items:center; gap:10px; font-weight:900; }
+    .swatch { width:16px; height:16px; border-radius:6px; border:1px solid rgba(0,0,0,.08); }
+    .metric-row { display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px dashed #d7e0ed; }
+    .metric-row:last-child { border-bottom:0; }
+    .metric-row span { color:var(--muted); }
+    .metric-row strong { color:#15395f; }
+    .empty { padding:26px; text-align:center; color:var(--muted); border:1px dashed #cbd5e1; border-radius:18px; background:#fff; }
+
+    @media (max-width:980px) {
+      .hero-meta,.summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .filters { grid-template-columns:1fr 1fr; }
+      .body-grid { grid-template-columns:1fr; }
+      .side { position:relative; top:0; grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:680px) {
+      .layout { width:min(100% - 20px,1220px); }
+      .hero-panel { padding:22px; border-radius:22px; }
+      .hero-meta,.summary-grid,.filters,.var-grid,.side { grid-template-columns:1fr; }
+      .section-head { display:block; }
+      .cat-title { white-space:normal; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="layout hero-panel">
+      <h1>Catálogo interactivo de variables</h1>
+      <p>Herramienta para revisar y validar la clasificación propuesta de variables utilizadas en el instrumento <strong>Minuta Catastral Territorial</strong>, con foco en talleres de validación con las Unidades de Catastro regionales.</p>
+      <div class="hero-meta">
+        <div class="meta-card"><span>Eje estratégico</span><strong>Mejora continua Estudios Territoriales</strong></div>
+        <div class="meta-card"><span>Instrumento</span><strong>Minuta Catastral Territorial</strong></div>
+        <div class="meta-card"><span>Actualización</span><strong>13-08-2026</strong></div>
+        <div class="meta-card"><span>Universo</span><strong><span id="heroTotalVars">85</span> variables</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="section" aria-labelledby="resumen-title">
+      <div class="section-head">
+        <div>
+          <h2 id="resumen-title">Resumen ejecutivo</h2>
+        </div>
+      </div>
+      <div class="grid summary-grid" id="summaryCards"></div>
+    </section>
+
+    <section class="section" aria-labelledby="catalogo-title">
+      <div class="section-head">
+        <div>
+          <h2 id="catalogo-title">Catálogo a validar por categoría</h2>
+        </div>
+      </div>
+
+      <div class="filters" role="search" aria-label="Filtros del catálogo">
+        <div class="field">
+          <label for="searchInput">Buscar variable</label>
+          <input id="searchInput" type="search" placeholder="Ej.: humedales, tsunami, energía..." autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="categoryFilter">Categoría</label>
+          <select id="categoryFilter"><option value="">Todas las categorías</option></select>
+        </div>
+        <div class="field">
+          <label for="classificationFilter">Clasificación propuesta</label>
+          <select id="classificationFilter"><option value="">Todas las clasificaciones</option></select>
+        </div>
+        <button class="btn" id="clearFilters">Limpiar filtros</button>
+      </div>
+
+      <div class="body-grid">
+        <div>
+          <div class="catalog-headline">
+            <span id="resultCount">0 variables visibles</span>
+            <span id="activeFilterLabel">Sin filtros activos</span>
+          </div>
+          <div class="accordion" id="catalogAccordion"></div>
+        </div>
+        <aside class="side" aria-label="Leyenda y métricas">
+          <div class="card legend">
+            <h3>Leyenda</h3>
+            <div class="legend-list" id="legendList"></div>
+          </div>
+          <div class="card metrics">
+            <h3>Métricas</h3>
+            <div class="metric-row"><span>Total variables</span><strong id="metricVars">0</strong></div>
+            <div class="metric-row"><span>Total categorías</span><strong id="metricCats">0</strong></div>
+            <div class="metric-row"><span>Clasificaciones</span><strong id="metricClasses">0</strong></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* =========================================================
+       CONFIGURACIÓN EDITABLE DE CLASIFICACIONES
+       Para cambiar colores o nombres, modificar este objeto.
+       ========================================================= */
+    const CLASSIFICATION_CONFIG = {
+      "Indicativa": { label:"Indicativa", color:"#DCEEF8", icon:"ⓘ", text:"#0f3b57" },
+      "Alerta": { label:"Alerta", color:"#FFF0C2", icon:"⚠", text:"#6b4d00" },
+      "Restrictiva": { label:"Restrictiva", color:"#F9D5D3", icon:"⛔", text:"#7a1f1f" },
+      "Normativa": { label:"Normativa", color:"#E7ECF3", icon:"§", text:"#334155" }
+    };
+
+    /* =========================================================
+       ORDEN EDITABLE DE CATEGORÍAS EN ACORDEONES Y FILTRO
+       Agregar o reordenar categorías aquí para cambiar la presentación.
+       ========================================================= */
+    const CATEGORY_ORDER = [
+      "Contexto territorial",
+      "Instrumentos de Planificación Territorial",
+      "Ambientales",
+      "Conservación",
+      "Indígenas",
+      "Riesgo",
+      "Turismo y patrimonio",
+      "Minería",
+      "Energía"
+    ];
+
+    /* =========================================================
+       DATOS EDITABLES
+       Reemplazar este arreglo JSON para futuras actualizaciones.
+       ========================================================= */
+    const VARIABLE_DATA = [
+  {
+    "variable": "Zona fronteriza D.L. 1939",
+    "categoria": "Contexto territorial",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Trámites en frontera",
+    "id": 1
+  },
+  {
+    "variable": "Zona fronteriza DIFROL",
+    "categoria": "Contexto territorial",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Trámites en frontera",
+    "id": 2
+  },
+  {
+    "variable": "Planes Reguladores Intercomunales",
+    "categoria": "Instrumentos de Planificación Territorial",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 3
+  },
+  {
+    "variable": "Límites Urbanos",
+    "categoria": "Instrumentos de Planificación Territorial",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 4
+  },
+  {
+    "variable": "Plan Regional de Desarrollo Urbano",
+    "categoria": "Instrumentos de Planificación Territorial",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 5
+  },
+  {
+    "variable": "Planes Reguladores Comunales",
+    "categoria": "Instrumentos de Planificación Territorial",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 6
+  },
+  {
+    "variable": "Planes Reguladores Metropolitanos",
+    "categoria": "Instrumentos de Planificación Territorial",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 7
+  },
+  {
+    "variable": "Planes Seccionales",
+    "categoria": "Instrumentos de Planificación Territorial",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 8
+  },
+  {
+    "variable": "Zonificación Uso del Borde Costero",
+    "categoria": "Instrumentos de Planificación Territorial",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 9
+  },
+  {
+    "variable": "Acuíferos Protegidos",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 10
+  },
+  {
+    "variable": "Áreas de prohibición de caza",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 11
+  },
+  {
+    "variable": "Áreas de Restricción y Zonas de Prohibición de Aguas Subterráneas/Acuíferos",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 12
+  },
+  {
+    "variable": "Bosque Nativo",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 13
+  },
+  {
+    "variable": "Cuerpos de agua",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 14
+  },
+  {
+    "variable": "Declaración de Agotamiento",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 15
+  },
+  {
+    "variable": "Glaciares",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 16
+  },
+  {
+    "variable": "Humedales",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 17
+  },
+  {
+    "variable": "Planes de Prevención y/o Descontaminación Atmosférica",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 18
+  },
+  {
+    "variable": "Salares",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 19
+  },
+  {
+    "variable": "Vegas Protegidas",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 20
+  },
+  {
+    "variable": "Zona Saturada o Latente",
+    "categoria": "Ambientales",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 21
+  },
+  {
+    "variable": "Áreas marinas protegidas",
+    "categoria": "Conservación",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 22
+  },
+  {
+    "variable": "Bienes Nacionales Protegidos",
+    "categoria": "Conservación",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 23
+  },
+  {
+    "variable": "Humedales urbanos",
+    "categoria": "Conservación",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según solicitud",
+    "id": 24
+  },
+  {
+    "variable": "Reservas de la Biósfera",
+    "categoria": "Conservación",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 25
+  },
+  {
+    "variable": "Santuario de la Naturaleza",
+    "categoria": "Conservación",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 26
+  },
+  {
+    "variable": "Sitios Prioritarios de Conservación",
+    "categoria": "Conservación",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 27
+  },
+  {
+    "variable": "Sitios Ramsar",
+    "categoria": "Conservación",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 28
+  },
+  {
+    "variable": "SNAP",
+    "categoria": "Conservación",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Restrictiva",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 29
+  },
+  {
+    "variable": "Áreas de Desarrollo Indígena",
+    "categoria": "Indígenas",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 30
+  },
+  {
+    "variable": "Asociaciones Indígenas",
+    "categoria": "Indígenas",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Histórica",
+    "id": 31
+  },
+  {
+    "variable": "Comunidades Indígenas",
+    "categoria": "Indígenas",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Histórica",
+    "id": 32
+  },
+  {
+    "variable": "Espacios Costeros Marinos Protegidos para Pueblos Indígenas (ECMPO)",
+    "categoria": "Indígenas",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 33
+  },
+  {
+    "variable": "Fondo de Tierras Indígenas Art. 20a",
+    "categoria": "Indígenas",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Histórica",
+    "id": 34
+  },
+  {
+    "variable": "Fondo de Tierras Indígenas Art. 20b",
+    "categoria": "Indígenas",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Histórica",
+    "id": 35
+  },
+  {
+    "variable": "Títulos de Merced",
+    "categoria": "Indígenas",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Histórica",
+    "id": 36
+  },
+  {
+    "variable": "Áreas costeras expuestas a impactos por cambio climático",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 37
+  },
+  {
+    "variable": "Áreas de peligro por actividad volcánica: áreas de peligro",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según trámite",
+    "id": 38
+  },
+  {
+    "variable": "Áreas de peligro por actividad volcánica: puntos de encuentro",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según trámite",
+    "id": 39
+  },
+  {
+    "variable": "Áreas de peligro por actividad volcánica: vías de evacuación",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según trámite",
+    "id": 40
+  },
+  {
+    "variable": "Áreas de Riesgo de Tsunami: área a evacuar",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 41
+  },
+  {
+    "variable": "Áreas de Riesgo de Tsunami: línea de seguridad",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 42
+  },
+  {
+    "variable": "Áreas de Riesgo de Tsunami: puntos de encuentro",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 43
+  },
+  {
+    "variable": "Áreas de Riesgo de Tsunami: vías de evacuación",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 44
+  },
+  {
+    "variable": "Cartas de inundación por tsunami",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 45
+  },
+  {
+    "variable": "Elementos costeros expuestos",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 46
+  },
+  {
+    "variable": "Ranking de peligrosidad de volcanes activos",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 47
+  },
+  {
+    "variable": "Remociones en masa",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 48
+  },
+  {
+    "variable": "Riesgo de incendios forestales",
+    "categoria": "Riesgo",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 49
+  },
+  {
+    "variable": "Atractivos Turísticos Nacionales",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 50
+  },
+  {
+    "variable": "Circuitos turísticos",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 51
+  },
+  {
+    "variable": "Destinos turísticos",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 52
+  },
+  {
+    "variable": "Inmuebles de Conservación Histórica",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según trámite",
+    "id": 53
+  },
+  {
+    "variable": "Monumento Histórico: área",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según trámite",
+    "id": 54
+  },
+  {
+    "variable": "Monumentos Históricos",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Según trámite",
+    "id": 55
+  },
+  {
+    "variable": "Rutas Patrimoniales: ámbitos",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 56
+  },
+  {
+    "variable": "Rutas Patrimoniales: circuitos",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 57
+  },
+  {
+    "variable": "Rutas Patrimoniales: hitos",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 58
+  },
+  {
+    "variable": "Zona de interés turístico",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 59
+  },
+  {
+    "variable": "Zona Típica o Pintoresca",
+    "categoria": "Turismo y patrimonio",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 60
+  },
+  {
+    "variable": "Explotación minera",
+    "categoria": "Minería",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 61
+  },
+  {
+    "variable": "Estacamentos salitrales",
+    "categoria": "Minería",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 62
+  },
+  {
+    "variable": "Exploración minera",
+    "categoria": "Minería",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 63
+  },
+  {
+    "variable": "Instalaciones mineras",
+    "categoria": "Minería",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 64
+  },
+  {
+    "variable": "Lugares de interés científico",
+    "categoria": "Minería",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 65
+  },
+  {
+    "variable": "Yacimientos",
+    "categoria": "Minería",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 66
+  },
+  {
+    "variable": "Potencial ERN Solar fotovoltaico",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "",
+    "id": 67
+  },
+  {
+    "variable": "Almacenamiento de combustible",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 68
+  },
+  {
+    "variable": "Centrales de generación eléctrica",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 69
+  },
+  {
+    "variable": "Concesiones geotérmicas",
+    "categoria": "Energía",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 70
+  },
+  {
+    "variable": "Concesiones onerosas de energía",
+    "categoria": "Energía",
+    "clasificacion_actual": "Normativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 71
+  },
+  {
+    "variable": "Gasoductos",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 72
+  },
+  {
+    "variable": "Líneas de transmisión eléctrica",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 73
+  },
+  {
+    "variable": "Oleoductos",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 74
+  },
+  {
+    "variable": "PELP Eólico",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 75
+  },
+  {
+    "variable": "PELP Geotérmico",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 76
+  },
+  {
+    "variable": "PELP Hidroeléctrico",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 77
+  },
+  {
+    "variable": "PELP Solar CSP",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 78
+  },
+  {
+    "variable": "PELP Solar fotovoltaico",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 79
+  },
+  {
+    "variable": "Potencial ERN Eólico",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 80
+  },
+  {
+    "variable": "Potencial ERN Geotérmico",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 81
+  },
+  {
+    "variable": "Potencial ERN Hidroeléctrico",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 82
+  },
+  {
+    "variable": "Potencial ERN Solar CSP",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 83
+  },
+  {
+    "variable": "Subestaciones Eléctricas",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Alerta",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "A cualquier trámite",
+    "id": 84
+  },
+  {
+    "variable": "Terminales Marítimos",
+    "categoria": "Energía",
+    "clasificacion_actual": "Indicativa",
+    "clasificacion_propuesta": "Indicativa",
+    "condicion": "Superpone / No superpone",
+    "aplicación": "Sin alerta definida",
+    "id": 85
+  }
+];
+
+    const $ = selector => document.querySelector(selector);
+    const state = { search:"", category:"", classification:"" };
+
+    function normalize(value) {
+      return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+    }
+    function getClassConfig(name) {
+      return CLASSIFICATION_CONFIG[name] || { label:name || "Sin clasificación", color:"#E5E7EB", icon:"•", text:"#374151" };
+    }
+    function unique(list) {
+      return [...new Set(list)].filter(Boolean);
+    }
+    function sortCategories(categories) {
+      return categories.slice().sort((a,b) => {
+        const ai = CATEGORY_ORDER.indexOf(a);
+        const bi = CATEGORY_ORDER.indexOf(b);
+        if (ai !== -1 && bi !== -1) return ai - bi;
+        if (ai !== -1) return -1;
+        if (bi !== -1) return 1;
+        return a.localeCompare(b, "es");
+      });
+    }
+    function sortClasses(classes) {
+      const order = ["Indicativa", "Alerta", "Restrictiva"];
+      return classes.slice().sort((a,b) => {
+        const ai = order.indexOf(a);
+        const bi = order.indexOf(b);
+        if (ai !== -1 && bi !== -1) return ai - bi;
+        if (ai !== -1) return -1;
+        if (bi !== -1) return 1;
+        return a.localeCompare(b, "es");
+      });
+    }
+
+    function init() {
+      populateFilters();
+      renderStaticMetrics();
+      renderSummary();
+      bindEvents();
+      renderCatalog();
+    }
+
+    function populateFilters() {
+      sortCategories(unique(VARIABLE_DATA.map(d => d.categoria))).forEach(category => {
+        $("#categoryFilter").insertAdjacentHTML("beforeend", `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`);
+      });
+      sortClasses(unique(VARIABLE_DATA.map(d => d.clasificacion_propuesta))).forEach(classification => {
+        $("#classificationFilter").insertAdjacentHTML("beforeend", `<option value="${escapeHtml(classification)}">${escapeHtml(classification)}</option>`);
+      });
+    }
+
+    function renderStaticMetrics() {
+      const categories = unique(VARIABLE_DATA.map(d => d.categoria));
+      const classes = unique(VARIABLE_DATA.map(d => d.clasificacion_propuesta));
+      $("#heroTotalVars").textContent = VARIABLE_DATA.length;
+      $("#metricVars").textContent = VARIABLE_DATA.length;
+      $("#metricCats").textContent = categories.length;
+      $("#metricClasses").textContent = classes.length;
+    }
+
+    function renderSummary() {
+      const classes = sortClasses(unique(VARIABLE_DATA.map(d => d.clasificacion_propuesta)));
+      $("#summaryCards").innerHTML = classes.map(name => {
+        const itemCount = VARIABLE_DATA.filter(d => d.clasificacion_propuesta === name).length;
+        const config = getClassConfig(name);
+        return `
+          <article class="summary-card card">
+            <h3 class="summary-title" style="background:${config.color}; color:${config.text};">${config.icon} ${escapeHtml(config.label)}</h3>
+            <div class="summary-value"><strong>${itemCount}</strong><span>variables</span></div>
+          </article>
+        `;
+      }).join("");
+
+      $("#legendList").innerHTML = classes.map(name => {
+        const config = getClassConfig(name);
+        const itemCount = VARIABLE_DATA.filter(d => d.clasificacion_propuesta === name).length;
+        return `<div class="legend-item"><span class="legend-left"><i class="swatch" style="background:${config.color}"></i>${config.icon} ${escapeHtml(config.label)}</span><small>${itemCount}</small></div>`;
+      }).join("");
+    }
+
+    function bindEvents() {
+      $("#searchInput").addEventListener("input", event => { state.search = event.target.value; renderCatalog(); });
+      $("#categoryFilter").addEventListener("change", event => { state.category = event.target.value; renderCatalog(); });
+      $("#classificationFilter").addEventListener("change", event => { state.classification = event.target.value; renderCatalog(); });
+      $("#clearFilters").addEventListener("click", () => {
+        state.search = "";
+        state.category = "";
+        state.classification = "";
+        $("#searchInput").value = "";
+        $("#categoryFilter").value = "";
+        $("#classificationFilter").value = "";
+        renderCatalog();
+      });
+    }
+
+    function getFilteredData() {
+      const query = normalize(state.search);
+      return VARIABLE_DATA.filter(item => {
+        const matchesSearch = !query || [item.variable, item.categoria, item.clasificacion_propuesta, item["aplicación"], item.condicion]
+          .some(value => normalize(value).includes(query));
+        const matchesCategory = !state.category || item.categoria === state.category;
+        const matchesClassification = !state.classification || item.clasificacion_propuesta === state.classification;
+        return matchesSearch && matchesCategory && matchesClassification;
+      });
+    }
+
+    function renderCatalog() {
+      const data = getFilteredData();
+      const grouped = groupBy(data, "categoria");
+      const categories = sortCategories(Object.keys(grouped));
+
+      $("#resultCount").textContent = `${data.length} variable${data.length === 1 ? "" : "s"} visible${data.length === 1 ? "" : "s"}`;
+      const active = [state.search && "búsqueda", state.category && "categoría", state.classification && "clasificación"].filter(Boolean);
+      $("#activeFilterLabel").textContent = active.length ? `Filtros activos: ${active.join(", ")}` : "Sin filtros activos";
+
+      if (!data.length) {
+        $("#catalogAccordion").innerHTML = `<div class="empty">No se encontraron variables para los filtros seleccionados.</div>`;
+        return;
+      }
+
+      $("#catalogAccordion").innerHTML = categories.map(category => {
+        const rows = grouped[category];
+        return `
+          <details class="category">
+            <summary>
+              <span class="summary-left">
+                <span class="chevron">▶</span>
+                <span><span class="cat-title">${escapeHtml(category)}</span><br><span class="cat-count">${rows.length} variable${rows.length === 1 ? "" : "s"}</span></span>
+              </span>
+              <span class="change-chip">${summarizeCategory(rows)}</span>
+            </summary>
+            <div class="cat-body"><div class="var-grid">${rows.map(renderVariableCard).join("")}</div></div>
+          </details>
+        `;
+      }).join("");
+    }
+
+    function renderVariableCard(item) {
+      const config = getClassConfig(item.clasificacion_propuesta);
+      const changed = item.clasificacion_actual !== item.clasificacion_propuesta;
+      return `
+        <article class="var-card" style="border-left-color:${config.color}">
+          <h4 class="var-title">${escapeHtml(item.variable)}</h4>
+          <div class="var-meta">
+            <div class="meta-row"><b>Categoría:</b><span>${escapeHtml(item.categoria)}</span></div>
+            <div class="meta-row"><b>Clasificación:</b><span class="pill" style="background:${config.color}; color:${config.text};">${config.icon} ${escapeHtml(config.label)}</span></div>
+            <div class="meta-row"><b>Condición:</b><span>${escapeHtml(item.condicion || "No informada")}</span></div>
+            <div class="meta-row"><b>Aplicación:</b><span>${escapeHtml(item["aplicación"] || "No informada")}</span></div>
+            <div class="meta-row"><b>Cambio:</b><span class="change-chip">${changed ? "↗ " + escapeHtml(item.clasificacion_actual) + " → " + escapeHtml(item.clasificacion_propuesta) : "✓ Se mantiene"}</span></div>
+          </div>
+        </article>
+      `;
+    }
+
+    function summarizeCategory(rows) {
+      const counts = rows.reduce((acc, item) => {
+        acc[item.clasificacion_propuesta] = (acc[item.clasificacion_propuesta] || 0) + 1;
+        return acc;
+      }, {});
+      return sortClasses(Object.keys(counts)).map(name => `${counts[name]} ${name}`).join(" · ");
+    }
+
+    function groupBy(data, key) {
+      return data.reduce((acc, item) => {
+        (acc[item[key]] ||= []).push(item);
+        return acc;
+      }, {});
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, function(match) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "\"": "&quot;",
+          "'": "&#39;"
+        }[match];
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
